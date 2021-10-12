@@ -3,31 +3,14 @@ using System.Collections.Generic;
 
 namespace BankApp.Models
 {
-    
-    public class Account
+    public class Bank
     {
-        public int AccountNumber { get; set; }
-        public string AccountHolderName { get; set; }
-       
-        public int pin { get; set; }
-        public int Balance { get; set; }
-
-        }
-    public class Transaction
-    {
-        public Transaction(int toid, string type, int amount, string datetime)
+        public int IFSCcode { get; set; }
+        public List<Account> AccountsList { get; set; }
+     public Bank()
         {
-            this.toid = toid;
-            Type = type;
-            Amount = amount;
-            Datetime = datetime;
+            AccountsList = new List<Account>();
         }
-        public int toid { get; set; }
-        public int fromid { get; set; }
-        public string Type { get; set; }   
-        public int Amount { get; set; }
-        public string Datetime { get; set; }
-       
     }
-    }
+}
 
