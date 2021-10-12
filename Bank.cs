@@ -5,7 +5,6 @@ namespace BankApp.Models
 {
     public class Bank
     {
-        public int IFSCcode { get; set; }
         public List<Account> AccountsList { get; set; }
      public Bank()
         {
