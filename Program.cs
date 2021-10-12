@@ -1,97 +1,88 @@
 ﻿using System;
 using BankApp.Services;
 using BankApp.Models;
+using System.Linq;
+
 namespace BankApp
 {
     class Program
     {
         static void Main(string[] args)
-            {
-                //Giving title to the console
-                Console.Title = "ATM Machine";
-                //displaying options
-                printString("______________________________");
-                printString("|ENTER YOUR CHOICE           |");
-                printString("|1.Create account            |");
-                printString("|2.Deposit Amount            |");
-                printString("|3.Withdraw amount           |");
-                printString("|4.transfer amount           |");
-                printString("|5.checkbalance              |");
-                printString("|6.Transaction history       |");
-                printString("|7.Exit                      |");
-                printString("______________________________");
-                BankServices bankService = new BankServices();
-            while(true)
+        {
+            //Giving title to the console
+            Console.Title = "Bank App";
+            //displaying options
+            printString("______________________________");
+            printString("|ENTER YOUR CHOICE           |");
+            printString("|1.Create account            |");
+            printString("|2.Deposit Amount            |");
+            printString("|3.Withdraw amount           |");
+            printString("|4.transfer amount           |");
+            printString("|5.checkbalance              |");
+            printString("|6.Transaction history       |");
+            printString("|7.Exit                      |");
+            printString("______________________________");
+            BankServices bankService = new BankServices();
+            bool i = true;
+            while (i)
             {
 
                 Features features = (Features)Enum.Parse(typeof(Features), Console.ReadLine());
 
                 switch (features)
-                { 
+                {
                     case Features.CreateAccount:
                         {
-                            printString("Enter account holder name");
-                            string acname = getUserInput();
-                            printString("Enter pin for setup");
-                            int pin = getUserInputAsInt();
-                            printString("Enter initial balance");
-                            int balance = getUserInputAsInt();
-                            bankService.createAccount(acname, pin, balance);
-                            printString($"Account created succesfully in bank ");
+                            string acname = GetUserInput("Enter account holder name");
+                            int password= GetUserInputAsInt("Enter pin for setup");
+                            double balance = GetUserInputAsDouble("Enter initial balance");
+                            bankService.createAccount(acname, password, balance);
+                            printString($"Account created succesfully in bank with accountnumber {BankServices.accountNumber - 1}");
                             break;
 
                         }
                     case Features.Deposit:
                         {
-                            printString("Enter amount");
-                            int amount = getUserInputAsInt();
-                            printString("Enter Ac number");
-                            int Acnumber = getUserInputAsInt();
-                            printString("Enter pin");
-                            int pin = getUserInputAsInt();
+                            double amount = GetUserInputAsDouble("Enter amount");
+                            int AccountNumber = GetUserInputAsInt("Enter account number");
+                            int password = GetUserInputAsInt("Enter pin");
                             try
                             {
-                                bankService.Deposit(amount, Acnumber, pin);
-                                printString($"Amount{amount} deposited in accountnumber{Acnumber}");
+                                bankService.Deposit(amount, AccountNumber, password);
+                                printString($"Amount{amount} deposited in accountnumber{AccountNumber}");
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 printString(ex.Message);
                             }
-                         
+
                             break;
                         }
                     case Features.Withdraw:
                         {
-                            printString("Enter amount");
-                            int amount = getUserInputAsInt();
-                            
-                            printString("Enter Ac number");
-                            int Acnumber = getUserInputAsInt();
-                            printString("Enter pin:");
-                            int pin = getUserInputAsInt();
+                            double amount = GetUserInputAsDouble("Enter amount");
+                            int accountnumber= GetUserInputAsInt("Enter Ac number");
+                            int password = GetUserInputAsInt("Enter pin: ");
                             try
                             {
-                                bankService.WithDraw(amount, Acnumber, pin);
-                                printString($"Amount{amount}withdrawn from accountnumber{Acnumber}");
+                                bankService.WithDraw(amount, accountnumber, password);
+                                printString($"Amount{amount}withdrawn from accountnumber{accountnumber}");
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 printString(ex.Message);
                             }
                             break;
                         }
-                    case Features.checkbalance:
+                    case Features.Checkbalance:
                         {
-                            printString("enter acnumber");
-                            int acnumber = getUserInputAsInt();
-                            printString("Enter pin");
-                            int pin = getUserInputAsInt();
+                            int accountnumber= GetUserInputAsInt("enter acnumber");
+                            int password = GetUserInputAsInt("Enter pin");
                             try
                             {
-                                printString($"{bankService.remBalance(acnumber, pin)}");
+                                printString($"{bankService.remBalance(accountnumber, password)}");
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 printString(ex.Message);
                             }
@@ -100,17 +91,13 @@ namespace BankApp
                         }
                     case Features.TransferAmount:
                         {
-                            printString("entersender account number");
-                            int seacnumber = getUserInputAsInt();
-                            printString("Enter pin");
-                            int spin = getUserInputAsInt();
-                            printString("enter receiver account number");
-                            int reacnumber = getUserInputAsInt();
-                            printString("Enter amount");
-                            int amount = getUserInputAsInt();
+                            int seacnumber = GetUserInputAsInt("entersender account number");
+                            int spassword = GetUserInputAsInt("Enter pin");
+                            int reacnumber = GetUserInputAsInt("enter receiver account number");
+                            double amount = GetUserInputAsDouble("Enter amount");
                             try
                             {
-                                bankService.transferAmount(amount, seacnumber, spin, reacnumber);
+                                bankService.transferAmount(amount, seacnumber, spassword, reacnumber);
                                 printString("Amount transferred succesfully");
                             }
                             catch (Exception ex)
@@ -122,54 +109,51 @@ namespace BankApp
 
                     case Features.Transactionhistory:
                         {
-                            printString("enter acnumber");
-                            int acnumber = getUserInputAsInt();
-                            foreach (Transaction transaction in bankService.transaclist)
-                            {
-                                if (transaction.toid == acnumber)
-                                {
-                                    printString(transaction.Datetime + " " + transaction.Type);
-                                    if (transaction.Type == "deposit")
-                                        printString("credited+" + transaction.Amount);
-                                    else
-                                        printString("debited- " + transaction.Amount);
-                                    printString("");
-
-                                }
-                            }
-                                break;
+                            int acnumber = GetUserInputAsInt("enter acnumber");
+                            bankService.GetTransactionhistory(acnumber);
+                            break;
                         }
 
 
                     case Features.Exit:
                         {
+                            i = false;
                             break;
                         }
 
 
                 }
-            } 
-
-
             }
+
+
+        }
         public enum Features
         {
-            CreateAccount=1,
+            CreateAccount = 1,
             Deposit,
             Withdraw,
             TransferAmount,
-            checkbalance,
+            Checkbalance,
             Transactionhistory,
             Exit,
         }
-        static string getUserInput()
+        static string GetUserInput(string message)
         {
+            Console.WriteLine(message);
             return Console.ReadLine();
         }
-        static int getUserInputAsInt()
+        
+        static int GetUserInputAsInt(string message)
         {
+            Console.WriteLine(message);
             return int.Parse(Console.ReadLine());
         }
+        static double GetUserInputAsDouble(string message)
+        {
+            Console.WriteLine(message);
+            return double.Parse(Console.ReadLine());
+        }
+
         public static int printString(string str)
         {
             Console.WriteLine(str);
@@ -179,4 +163,3 @@ namespace BankApp
 
     }
 }
-    
