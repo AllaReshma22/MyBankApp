@@ -1,7 +1,9 @@
 ﻿using System;
-using BankApp.Services;
+using BankApp.Service;
 using BankApp.Models;
 using System.Linq;
+using System.Collections.Generic;
+using BankApp.Models.Exceptions;
 
 namespace BankApp
 {
@@ -14,110 +16,207 @@ namespace BankApp
             //displaying options
             printString("______________________________");
             printString("|ENTER YOUR CHOICE           |");
-            printString("|1.Create account            |");
-            printString("|2.Deposit Amount            |");
-            printString("|3.Withdraw amount           |");
-            printString("|4.transfer amount           |");
-            printString("|5.checkbalance              |");
-            printString("|6.Transaction history       |");
-            printString("|7.Exit                      |");
+            printString("|1.Add Bank                    |");
+            printString("|2.Create account            |");
+            printString("|3.Deposit Amount            |");
+            printString("|4.Withdraw amount           |");
+            printString("|5.transfer amount           |");
+            printString("|6.checkbalance              |");
+            printString("|7.Transaction history       |");
+            printString("|8.Exit                      |");
             printString("______________________________");
-            BankServices bankService = new BankServices();
-            bool i = true;
-            while (i)
+            BankService bankService = new BankService();
+            UserMenu userMenu = new UserMenu();
+            while (true)
             {
 
-                Features features = (Features)Enum.Parse(typeof(Features), Console.ReadLine());
+                UserMenu.Features features = (UserMenu.Features)Enum.Parse(typeof(UserMenu.Features), Console.ReadLine());
 
                 switch (features)
                 {
-                    case Features.CreateAccount:
+                    case UserMenu.Features.AddBank:
                         {
-                            string acname = GetUserInput("Enter account holder name");
-                            int password= GetUserInputAsInt("Enter pin for setup");
-                            double balance = GetUserInputAsDouble("Enter initial balance");
-                            bankService.createAccount(acname, password, balance);
-                            printString($"Account created succesfully in bank with accountnumber {BankServices.accountNumber - 1}");
+                            String Bankname = GetUserInput("Enter bank name");
+                            int bankid = bankService.addBank(Bankname);
+                            printString($"Bank added successfully with bank id{bankid} and bankname {Bankname}");
+                            break;
+                        }
+                    case UserMenu.Features.CreateAccount:
+                        {
+                            int bankid = GetUserInputAsInt("Enter the bankid ");
+                            string AccountHolderName = GetUserInput("Enter account holder name");
+                            int Password = GetUserInputAsInt("Enter password for setup:");
+                            double Balance = GetUserInputAsDouble("Enter initial balance");
+                            try
+                            {
+                                int AccountNumber = bankService.createAccount(bankid, AccountHolderName, Password, Balance);
+                                printString($"Account created succesfully in bank with accountnumber {AccountNumber} in bank with bankid {bankid}");
+                            }
+                            catch (IncorrectBankIdException ex)
+                            {
+                                printString(ex.Message);
+                            }
+
                             break;
 
                         }
-                    case Features.Deposit:
+                    case UserMenu.Features.Deposit:
                         {
-                            double amount = GetUserInputAsDouble("Enter amount");
+                            int bankid = GetUserInputAsInt("Enter the bankid ");
                             int AccountNumber = GetUserInputAsInt("Enter account number");
-                            int password = GetUserInputAsInt("Enter pin");
+                            double Amount = GetUserInputAsDouble("Enter amount");
+                            int Password = GetUserInputAsInt("Enter password");
                             try
                             {
-                                bankService.Deposit(amount, AccountNumber, password);
-                                printString($"Amount{amount} deposited in accountnumber{AccountNumber}");
+                                bankService.Deposit(bankid,Amount, AccountNumber, Password);
+                                printString($"Amount{Amount} deposited in accountnumber {AccountNumber}");
                             }
-                            catch (Exception ex)
+                            catch (AmountNotSufficient ex)
                             {
                                 printString(ex.Message);
                             }
-
-                            break;
-                        }
-                    case Features.Withdraw:
-                        {
-                            double amount = GetUserInputAsDouble("Enter amount");
-                            int accountnumber= GetUserInputAsInt("Enter Ac number");
-                            int password = GetUserInputAsInt("Enter pin: ");
-                            try
+                            catch (IncorrectBankIdException ex)
                             {
-                                bankService.WithDraw(amount, accountnumber, password);
-                                printString($"Amount{amount}withdrawn from accountnumber{accountnumber}");
+                                printString(ex.Message);
                             }
-                            catch (Exception ex)
+                            catch (IncorrectPin ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectAccountNumberException ex)
                             {
                                 printString(ex.Message);
                             }
                             break;
                         }
-                    case Features.Checkbalance:
+                  case UserMenu.Features.Withdraw:
                         {
-                            int accountnumber= GetUserInputAsInt("enter acnumber");
-                            int password = GetUserInputAsInt("Enter pin");
+                            int bankid = GetUserInputAsInt("Enter the bankid ");
+                            int AccountNumber = GetUserInputAsInt("Enter Ac number");
+                            double Amount = GetUserInputAsDouble("Enter amount");
+                            int Password = GetUserInputAsInt("Enter pin: ");
                             try
                             {
-                                printString($"{bankService.remBalance(accountnumber, password)}");
+                                bankService.WithDraw(bankid,Amount, AccountNumber, Password);
+                                printString($"Amount{Amount}withdrawn from accountnumber{AccountNumber}");
                             }
-                            catch (Exception ex)
+                            catch (AmountNotSufficient ex)
                             {
                                 printString(ex.Message);
                             }
-
+                            catch (IncorrectBankIdException ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectPin ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectAccountNumberException ex)
+                            {
+                                printString(ex.Message);
+                            }
                             break;
                         }
-                    case Features.TransferAmount:
+              
+                    case UserMenu.Features.CheckBalance:
                         {
-                            int seacnumber = GetUserInputAsInt("entersender account number");
-                            int spassword = GetUserInputAsInt("Enter pin");
-                            int reacnumber = GetUserInputAsInt("enter receiver account number");
-                            double amount = GetUserInputAsDouble("Enter amount");
+                            int bankid = GetUserInputAsInt("Enter the bankid ");
+                            int AccountNumber = GetUserInputAsInt("enter acnumber");
+                            int Password = GetUserInputAsInt("Enter pin");
                             try
                             {
-                                bankService.transferAmount(amount, seacnumber, spassword, reacnumber);
+                                printString($"{bankService.GetBalance(bankid,AccountNumber, Password)}");
+                            }
+                            catch (AmountNotSufficient ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectBankIdException ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectPin ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectAccountNumberException ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            break;
+                        }
+                   case UserMenu.Features.TransferAmount:
+                        {
+                            int senderbankid = GetUserInputAsInt("Enter the bankid ");
+                            int SenderAccountNumber = GetUserInputAsInt("entersender account number");
+                            int SenderPassword = GetUserInputAsInt("Enter pin");
+                            int receiverbankid = GetUserInputAsInt("Enter the receiver bankid");
+                            int ReceiverAccountNumber = GetUserInputAsInt("enter receiver account number");
+                            double Amount = GetUserInputAsDouble("Enter amount");
+                            try
+                            {
+                                bankService.transferAmount(senderbankid,SenderAccountNumber, SenderPassword,Amount,receiverbankid, ReceiverAccountNumber);
                                 printString("Amount transferred succesfully");
                             }
-                            catch (Exception ex)
+                            catch(AmountNotSufficient ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch(IncorrectBankIdException ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch(IncorrectPin ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch(IncorrectAccountNumberException ex)
                             {
                                 printString(ex.Message);
                             }
                             break;
                         }
 
-                    case Features.Transactionhistory:
+                    case UserMenu.Features.Transactionhistory:
                         {
-                            int acnumber = GetUserInputAsInt("enter acnumber");
-                            bankService.GetTransactionhistory(acnumber);
+                            int bankid = GetUserInputAsInt("Enter the bankid ");
+                            int AccountNumber = GetUserInputAsInt("enter acnumber");
+                            int Password = GetUserInputAsInt("Enter Password");
+                            try
+                            {
+                                List<Transaction> transactions = bankService.GetTransactionhistory(bankid, AccountNumber, Password);
+                                foreach (Transaction transaction in transactions)
+                                {
+                                    printString(transaction.dateTime + " " + transaction.Type);
+                                    if (transaction.Type == TransactionType.transactionType.Deposit)
+                                        printString("credited+" + transaction.Amount);
+                                    else
+                                        printString("debited- " + transaction.Amount);
+                                    printString("");
+                                }
+                            }
+                            catch (IncorrectBankIdException ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectPin ex)
+                            {
+                                printString(ex.Message);
+                            }
+                            catch (IncorrectAccountNumberException ex)
+                            {
+                                printString(ex.Message);
+                            }
+
+
                             break;
                         }
+            
 
-
-                    case Features.Exit:
+                    case UserMenu.Features.Exit:
                         {
-                            i = false;
+                            Environment.Exit(0);
                             break;
                         }
 
@@ -127,27 +226,17 @@ namespace BankApp
 
 
         }
-        public enum Features
-        {
-            CreateAccount = 1,
-            Deposit,
-            Withdraw,
-            TransferAmount,
-            Checkbalance,
-            Transactionhistory,
-            Exit,
-        }
         static string GetUserInput(string message)
         {
             Console.WriteLine(message);
             return Console.ReadLine();
         }
-        
+
         static int GetUserInputAsInt(string message)
         {
-            Console.WriteLine(message);
-            return int.Parse(Console.ReadLine());
+            return int.Parse(GetUserInput(message));
         }
+
         static double GetUserInputAsDouble(string message)
         {
             Console.WriteLine(message);

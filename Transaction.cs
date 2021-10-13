@@ -8,23 +8,19 @@ namespace BankApp.Models
 {
     public class Transaction
     {
-        public Transaction(int TargetAccount, string Type, double Amount, string Datetime)
+        public Transaction(int TargetAccount, double Amount,TransactionType.transactionType type, DateTime datetime)
         {
             this.TargetAccount = TargetAccount;
-          this.Type = Type;
+          
             this. Amount = Amount;
-            this.Datetime = Datetime;
+            Type=type;
+            dateTime = datetime;
         }
-
+      
         public int TargetAccount { get; set; }
-           
-      public string Type { get; set; }
         public double Amount { get; set; }
-        public string Datetime { get; set; }
-      public enum type
-        {
-            Deposit=1,
-            Withdraw,
-        }   
+        public  DateTime dateTime { get; set; }
+        public TransactionType.transactionType Type { get; set; }
+     
     }
 }
